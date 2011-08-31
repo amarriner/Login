@@ -1,3 +1,3 @@
-ONLYNEW
-A plugin to TDSM that only allows new players
+LOGIN
+A plugin to TDSM that restricts player logins in various ways
 author: amarriner
