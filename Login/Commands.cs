@@ -20,7 +20,7 @@ namespace Login.Commands
     {
         public static void GetEquip(Server server, ISender sender, ArgumentList args)
         {
-            if (Login.plugin.PlayerHasNullInventory(server.GetPlayerByName(sender.Name)))
+            if (Login.plugin.PlayerHasNullInventory(server.GetPlayerByName(sender.Name)) && Login.plugin.onlyAllowNewPlayers)
             {
                 ArgumentList giveArgs = new ArgumentList(server);
 

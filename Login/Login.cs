@@ -40,6 +40,10 @@ namespace Login
         public bool onlyAllowSoftcore;
         public bool onlyAllowMediumcore;
         public bool onlyAllowHardcore;
+        public String inventoryMessage;
+        public String softcoreMessage;
+        public String mediumcoreMessage;
+        public String hardcoreMessage;
 
         public Hashtable validPlayers = new Hashtable();
 
@@ -56,14 +60,11 @@ namespace Login
             this.registerHook(Hooks.PLAYER_LOGIN);
             this.registerHook(Hooks.PLAYER_LOGOUT);
 
-            if (onlyAllowNewPlayers)
-            {
-                AddCommand("getequip")
-                    .WithAccessLevel(AccessLevel.PLAYER)
-                    .WithDescription("Retrieve starting equipment")
-                    .WithHelpText("Usage: /getequip")
-                    .Calls(Commands.Commands.GetEquip);
-            }
+            AddCommand("getequip")
+                .WithAccessLevel(AccessLevel.PLAYER)
+                .WithDescription("Retrieve starting equipment")
+                .WithHelpText("Usage: /getequip")
+                .Calls(Commands.Commands.GetEquip);
         }
 
         public override void Enable()
@@ -80,6 +81,10 @@ namespace Login
             onlyAllowSoftcore = properties.OnlyAllowSoftcore;
             onlyAllowMediumcore = properties.OnlyAllowMediumcore;
             onlyAllowHardcore = properties.OnlyAllowHardcore;
+            inventoryMessage = properties.InventoryMessage;
+            softcoreMessage = properties.SoftcoreMessage;
+            mediumcoreMessage = properties.MediumcoreMessage;
+            hardcoreMessage = properties.HardcoreMessage;
             properties.Save();
 
             Program.tConsole.WriteLine(base.Name + " enabled.");
@@ -93,13 +98,13 @@ namespace Login
         public override void onPlayerJoin(PlayerLoginEvent Event)
         {
             if (onlyAllowSoftcore && Event.Player.Difficulty != SOFTCORE)
-                Event.Player.Kick("Server only allows softcore players");
+                KickPlayer(Event.Player, softcoreMessage);
 
             else if (onlyAllowMediumcore && Event.Player.Difficulty != MEDIUMCORE)
-                Event.Player.Kick("Server only allows mediumcore players");
+                KickPlayer(Event.Player, mediumcoreMessage);
 
             else if (onlyAllowHardcore && Event.Player.Difficulty != HARDCORE)
-                Event.Player.Kick("Server only allows hardcore players");
+                KickPlayer(Event.Player, hardcoreMessage);
 
             else if (onlyAllowNewPlayers)
             {
@@ -111,10 +116,10 @@ namespace Login
                     switch (error)
                     {
                         case PLAYER_INVALID_LOGOFF:
-                            Event.Player.Kick("You didn't log off cleanly last time");
+                            KickPlayer(Event.Player, "You didn't log off cleanly last time");
                             break;
                         case PLAYER_NO_INVENTORY_MATCH:
-                            Event.Player.Kick("You have different inventory");
+                            KickPlayer(Event.Player, "You have different inventory");
                             break;
                         case PLAYER_VALID:
                             Event.Player.sendMessage("You've been validated", chatColor);
@@ -128,9 +133,9 @@ namespace Login
                     if (!PlayerHasNullInventory(Event.Player))
                     {
                         if (kickIfHasInventory)
-                            Event.Player.Kick("You must have an empty inventory");
+                            KickPlayer(Event.Player, inventoryMessage);
                         else
-                            Event.Player.sendMessage("This server requires that your inventory is empty upon first login", chatColor);
+                            Event.Player.sendMessage(inventoryMessage, chatColor);
                     }
                     else
                     {
@@ -140,12 +145,20 @@ namespace Login
                 }
             }
 
-            // base.onPlayerJoin(Event);
+            base.onPlayerJoin(Event);
+        }
+
+        public void KickPlayer(Player Player, String message)
+        {
+            Player.PluginData["kicked"] = true;
+            Player.Kick(message);
         }
 
         public override void onPlayerLogout(PlayerLogoutEvent Event)
         {
-            if (onlyAllowNewPlayers)
+            bool kicked = Event.Player.PluginData.ContainsKey("kicked") ? (bool)Event.Player.PluginData["kicked"] : false;
+
+            if (onlyAllowNewPlayers && !kicked)
             {
                 SavePlayerData(Event.Player, true);
             }
@@ -153,11 +166,19 @@ namespace Login
             base.onPlayerLogout(Event);
         }
 
-        public bool PlayerHasNullInventory(Player InPlayer)
+        public bool PlayerHasNullInventory(Player Player)
         {
-            for (int i = 0; i < InPlayer.inventory.Length; i++)
+            for (int i = 0; i < Player.inventory.Length; i++)
             {
-                if (InPlayer.inventory[i].Stack > 0)
+                if (Player.inventory[i].Stack > 0)
+                {
+                    return false;
+                }
+            }
+
+            for (int i = 0; i < Player.ammo.Length; i++)
+            {
+                if (Player.ammo[i].Stack > 0)
                 {
                     return false;
                 }
@@ -261,7 +282,27 @@ namespace Login
                 inventory += Player.inventory[i].Type.ToString() + ":" + Player.inventory[i].Stack.ToString();
             }
 
-            return inventory;
+            string ammo = StringifyAmmo(Player);
+
+            if (inventory != "" && ammo != "")
+                inventory += "-";
+
+            return inventory + ammo;
+        }
+
+        private string StringifyAmmo(Player Player)
+        {
+            string ammo = "";
+
+            for (int i = 0; i < Player.ammo.Length; i++)
+            {
+                if (i > 0)
+                    ammo += "-";
+
+                ammo += Player.ammo[i].Type.ToString() + ":" + Player.ammo[i].Stack.ToString();
+            }
+
+            return ammo;
         }
 
         private static void CreateDirectory(string dirPath)
