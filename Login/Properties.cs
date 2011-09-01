@@ -17,6 +17,11 @@ namespace Login
         private const String DEFAULT_SOFTCORE_MESSAGE = "Server only allows softcore players";
         private const String DEFAULT_MEDIUMCORE_MESSAGE = "Server only allows mediumcore players";
         private const String DEFAULT_HARDCORE_MESSAGE = "Server only allows hardcore players";
+        private const bool DEFAULT_BAN_PIGGY_BANKS = true;
+        private const bool DEFAULT_BAN_SAFES = true;
+        private const String DEFAULT_STARTING_EQUIPMENT = "ironshortsword-1:ironpickaxe-1:ironaxe-1:wood-100:torch-10";
+        private const String DEFAULT_JAIL_POINT = "0,0";
+        private const String DEFAULT_VALIDATED_POINT = "0,0";
 
         private const String KICK_IF_HAS_INVENTORY = "kickifhasinventory";
         private const String ONLY_ALLOW_NEW_PLAYERS = "onlyallownewplayers";
@@ -27,6 +32,11 @@ namespace Login
         private const String SOFTCORE_MESSAGE = "softcoremessage";
         private const String MEDIUMCORE_MESSAGE = "mediumcoremessage";
         private const String HARDCORE_MESSAGE = "hardcoremessage";
+        private const String BAN_PIGGY_BANKS = "banpiggybanks";
+        private const String BAN_SAFES = "bansafes";
+        private const String STARTING_EQUIPMENT = "startingequipment";
+        private const String JAIL_POINT = "jailpoint";
+        private const String VALIDATED_POINT = "validatedpoint";
 
         public Properties(String propertiesPath) : base(propertiesPath) { }
 
@@ -99,6 +109,54 @@ namespace Login
             get
             {
                 return getValue(HARDCORE_MESSAGE, DEFAULT_HARDCORE_MESSAGE);
+            }
+        }
+
+        public bool BanPiggyBanks
+        {
+            get
+            {
+                return getValue(BAN_PIGGY_BANKS, DEFAULT_BAN_PIGGY_BANKS);
+            }
+        }
+
+        public bool BanSafes
+        {
+            get
+            {
+                return getValue(BAN_SAFES, DEFAULT_BAN_SAFES);
+            }
+        }
+
+        public String StartingEquipment
+        {
+            get
+            {
+                return getValue(STARTING_EQUIPMENT, DEFAULT_STARTING_EQUIPMENT);
+            }
+        }
+
+        public String JailPoint
+        {
+            get
+            {
+                return getValue(JAIL_POINT, DEFAULT_JAIL_POINT);
+            }
+            set
+            {
+                setValue(JAIL_POINT, value);
+            }
+        }
+
+        public String ValidatedPoint
+        {
+            get
+            {
+                return getValue(VALIDATED_POINT, DEFAULT_VALIDATED_POINT);
+            }
+            set
+            {
+                setValue(VALIDATED_POINT, value);
             }
         }
     }

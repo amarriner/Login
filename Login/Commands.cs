@@ -18,38 +18,102 @@ namespace Login.Commands
 {
     public class Commands
     {
-        public static void GetEquip(Server server, ISender sender, ArgumentList args)
+        public static void InvalidatePlayer(Server server, ISender sender, ArgumentList args)
         {
-            if (Login.plugin.PlayerHasNullInventory(server.GetPlayerByName(sender.Name)) && Login.plugin.onlyAllowNewPlayers)
+            string playerName;
+            Player player = server.GetPlayerByName(sender.Name);
+
+            if (args.TryGetString(0, out playerName))
             {
-                ArgumentList giveArgs = new ArgumentList(server);
-
-                // Iron Shortsword
-                giveArgs.Add(sender.Name);
-                giveArgs.Add("1");
-                giveArgs.Add("6");
-                Terraria_Server.Commands.Commands.Give(server, sender, giveArgs);
-
-                // Iron Pickaxe
-                giveArgs[2] = "ironpickaxe";
-                Terraria_Server.Commands.Commands.Give(server, sender, giveArgs);
-
-                // Iron Axe
-                giveArgs[2] = "10";
-                Terraria_Server.Commands.Commands.Give(server, sender, giveArgs);
-
-                // Wood
-                giveArgs[1] = "100";
-                giveArgs[2] = "9";
-                Terraria_Server.Commands.Commands.Give(server, sender, giveArgs);
-
-                // Torches
-                giveArgs[1] = "10";
-                giveArgs[2] = "8";
-                Terraria_Server.Commands.Commands.Give(server, sender, giveArgs);
+                if (server.GetPlayerByName(playerName) != null)
+                {
+                    Login.plugin.SetPlayerInvalid(server.GetPlayerByName(playerName));
+                    SendMessage(player, "You have invalidated " + playerName);
+                }
+                else
+                    SendMessage(player, "There is no current player named " + playerName);
             }
             else
-                server.GetPlayerByName(sender.Name).sendMessage("You cannot use this command if you have inventory items!", Login.plugin.chatColor);
+                SendMessage(player, "You must supply a player name");
+        }
+
+        private static void SendMessage(Player InPlayer, String message)
+        {
+            if (InPlayer != null)
+                InPlayer.sendMessage(message, Login.plugin.chatColor);
+            else
+                Program.tConsole.WriteLine(message);
+        }
+
+        public static void SetPoint(Server server, ISender sender, ArgumentList args)
+        {
+            string param;
+            Player player = server.GetPlayerByName(sender.Name);
+
+            if (args.TryGetString(0, out param))
+            {
+                switch (param.ToUpper())
+                {
+                    case "JAIL":
+                        player.PluginData["jail"] = true;
+                        player.sendMessage("Hit a block where you want the jail to be", Login.plugin.chatColor);
+                        break;
+                    case "VALIDATED":
+                        player.PluginData["validated"] = true;
+                        player.sendMessage("Hit a block where you want the validated point to be", Login.plugin.chatColor);
+                        break;
+                    default:
+                        player.sendMessage("You must specify either jail or validated", Login.plugin.chatColor);
+                        break;
+                }
+            }
+            else
+                player.sendMessage("You must specify either jail or validated", Login.plugin.chatColor);
+        }
+
+        public static void TestPoint(Server server, ISender sender, ArgumentList args)
+        {
+            string param;
+            Player player = server.GetPlayerByName(sender.Name);
+
+            if (args.TryGetString(0, out param))
+            {
+                switch (param.ToUpper())
+                {
+                    case "JAIL":
+                        player.sendMessage("Teleporting to the jail", Login.plugin.chatColor);
+                        Login.plugin.TeleportPlayerToPoint(player, Login.JAIL);
+                        break;
+                    case "VALIDATED":
+                        player.sendMessage("Teleporting to the validated point", Login.plugin.chatColor);
+                        Login.plugin.TeleportPlayerToPoint(player, Login.VALIDATED);
+                        break;
+                    default:
+                        player.sendMessage("You must specify either jail or validated", Login.plugin.chatColor);
+                        break;
+                }
+            }
+            else
+                player.sendMessage("You must specify either jail or validated", Login.plugin.chatColor);
+        }
+
+        public static void ValidatePlayer(Server server, ISender sender, ArgumentList args)
+        {
+            string playerName;
+            Player player = server.GetPlayerByName(sender.Name);
+
+            if (args.TryGetString(0, out playerName))
+            {
+                if (server.GetPlayerByName(playerName) != null)
+                {
+                    Login.plugin.SetPlayerValid(server.GetPlayerByName(playerName), true);
+                    SendMessage(player, "You have validated " + playerName);
+                }
+                else
+                    SendMessage(player, "There is no current player named " + playerName);
+            }
+            else
+                SendMessage(player, "You must supply a player name");
         }
     }
 }
