@@ -13,9 +13,9 @@ If the server is closed in an unclean way (power outage, CTRL-C), players who ar
 Want to allow setting of properties at runtime rather that just in the properties file.
 
 ##COMMANDS
-* **/invalidate <player> (force)** - Manually invalidate a player (also sends them to the JailPoint if they're logged on). Deletes their XML file.
-* **/setpoint <lobby or validated>** - The next block you attempt to break will become either the JailPoint or the ValidatedPoint respectively. If these points are set to something other than 0,0, players will be teleported to those points when they become invalid (JailPoint) or valid (ValidatedPoint).
-* **/testpoint <lobby or validated>** - Sends player who ran the command to either the JailPoint or the ValidatedPoint. Used to make sure they're set properly.
+* **/invalidate <player> (force)** - Manually invalidate a player (also sends them to the LobbyPoint if they're logged on). Deletes their XML file.
+* **/setpoint <lobby or validated>** - The next block you attempt to break will become either the LobbyPoint or the ValidatedPoint respectively. If these points are set to something other than 0,0, players will be teleported to those points when they become invalid (LobbyPoint) or valid (ValidatedPoint).
+* **/testpoint <lobby or validated>** - Sends player who ran the command to either the LobbyPoint or the ValidatedPoint. Used to make sure they're set properly.
 * **/validate <player>** - Manually validates a player (also sends them to the ValidatedPoint).
 
 ##PROPERTIES
