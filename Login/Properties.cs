@@ -10,32 +10,30 @@ namespace Login
     {
         private const bool DEFAULT_KICK_IF_HAS_INVENTORY = true;
         private const bool DEFAULT_ONLY_ALLOW_NEW_PLAYERS = true;
-        private const bool DEFAULT_ONLY_ALLOW_SOFTCORE = false;
-        private const bool DEFAULT_ONLY_ALLOW_MEDIUMCORE = false;
-        private const bool DEFAULT_ONLY_ALLOW_HARDCORE = false;
+        private const bool DEFAULT_FORCE_SOFTCORE = false;
+        private const bool DEFAULT_FORCE_MEDIUMCORE = false;
+        private const bool DEFAULT_FORCE_HARDCORE = false;
         private const String DEFAULT_INVENTORY_MESSAGE = "Server only allows empty inventory";
-        private const String DEFAULT_SOFTCORE_MESSAGE = "Server only allows softcore players";
-        private const String DEFAULT_MEDIUMCORE_MESSAGE = "Server only allows mediumcore players";
-        private const String DEFAULT_HARDCORE_MESSAGE = "Server only allows hardcore players";
+        private const String DEFAULT_DIFFERENT_INVENTORY_MESSAGE = "You have different inventory";
+        private const String DEFAULT_VALIDATED_MESSAGE = "You've been validated";
         private const bool DEFAULT_BAN_PIGGY_BANKS = true;
         private const bool DEFAULT_BAN_SAFES = true;
         private const String DEFAULT_STARTING_EQUIPMENT = "ironshortsword-1:ironpickaxe-1:ironaxe-1:wood-100:torch-10";
-        private const String DEFAULT_JAIL_POINT = "0,0";
+        private const String DEFAULT_LOBBY_POINT = "0,0";
         private const String DEFAULT_VALIDATED_POINT = "0,0";
 
         private const String KICK_IF_HAS_INVENTORY = "kickifhasinventory";
         private const String ONLY_ALLOW_NEW_PLAYERS = "onlyallownewplayers";
-        private const String ONLY_ALLOW_SOFTCORE = "onlyallowsoftcore";
-        private const String ONLY_ALLOW_MEDIUMCORE = "onlyallowmediumcore";
-        private const String ONLY_ALLOW_HARDCORE = "onlyallowhardcore";
+        private const String FORCE_SOFTCORE = "forcesoftcore";
+        private const String FORCE_MEDIUMCORE = "forcemediumcore";
+        private const String FORCE_HARDCORE = "forcehardcore";
         private const String INVENTORY_MESSAGE = "inventorymessage";
-        private const String SOFTCORE_MESSAGE = "softcoremessage";
-        private const String MEDIUMCORE_MESSAGE = "mediumcoremessage";
-        private const String HARDCORE_MESSAGE = "hardcoremessage";
+        private const String DIFFERENT_INVENTORY_MESSAGE = "differentinventorymessage";
+        private const String VALIDATED_MESSAGE = "validated_message";
         private const String BAN_PIGGY_BANKS = "banpiggybanks";
         private const String BAN_SAFES = "bansafes";
         private const String STARTING_EQUIPMENT = "startingequipment";
-        private const String JAIL_POINT = "jailpoint";
+        private const String LOBBY_POINT = "lobbypoint";
         private const String VALIDATED_POINT = "validatedpoint";
 
         public Properties(String propertiesPath) : base(propertiesPath) { }
@@ -56,27 +54,27 @@ namespace Login
             }
         }
 
-        public bool OnlyAllowSoftcore
+        public bool ForceSoftcore
         {
             get
             {
-                return getValue(ONLY_ALLOW_SOFTCORE, DEFAULT_ONLY_ALLOW_SOFTCORE);
+                return getValue(FORCE_SOFTCORE, DEFAULT_FORCE_SOFTCORE);
             }
         }
 
-        public bool OnlyAllowMediumcore
+        public bool ForceMediumcore
         {
             get
             {
-                return getValue(ONLY_ALLOW_MEDIUMCORE, DEFAULT_ONLY_ALLOW_MEDIUMCORE);
+                return getValue(FORCE_MEDIUMCORE, DEFAULT_FORCE_MEDIUMCORE);
             }
         }
 
-        public bool OnlyAllowHardcore
+        public bool ForceHardcore
         {
             get
             {
-                return getValue(ONLY_ALLOW_HARDCORE, DEFAULT_ONLY_ALLOW_HARDCORE);
+                return getValue(FORCE_HARDCORE, DEFAULT_FORCE_HARDCORE);
             }
         }
 
@@ -88,27 +86,19 @@ namespace Login
             }
         }
 
-        public String SoftcoreMessage
+        public String DifferentInventoryMessage
         {
             get
             {
-                return getValue(SOFTCORE_MESSAGE, DEFAULT_SOFTCORE_MESSAGE);
+                return getValue(DIFFERENT_INVENTORY_MESSAGE, DEFAULT_DIFFERENT_INVENTORY_MESSAGE);
             }
         }
 
-        public String MediumcoreMessage
+        public String ValidatedMessage
         {
             get
             {
-                return getValue(MEDIUMCORE_MESSAGE, DEFAULT_MEDIUMCORE_MESSAGE);
-            }
-        }
-
-        public String HardcoreMessage
-        {
-            get
-            {
-                return getValue(HARDCORE_MESSAGE, DEFAULT_HARDCORE_MESSAGE);
+                return getValue(VALIDATED_MESSAGE, DEFAULT_VALIDATED_MESSAGE);
             }
         }
 
@@ -136,15 +126,15 @@ namespace Login
             }
         }
 
-        public String JailPoint
+        public String LobbyPoint
         {
             get
             {
-                return getValue(JAIL_POINT, DEFAULT_JAIL_POINT);
+                return getValue(LOBBY_POINT, DEFAULT_LOBBY_POINT);
             }
             set
             {
-                setValue(JAIL_POINT, value);
+                setValue(LOBBY_POINT, value);
             }
         }
 

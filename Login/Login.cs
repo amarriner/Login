@@ -27,9 +27,13 @@ namespace Login
         public const byte SOFTCORE = 0;
         public const byte MEDIUMCORE = 1;
         public const byte HARDCORE = 2;
-
-        public const int JAIL = 0;
+        
+        public const int LOBBY = 0;
         public const int VALIDATED = 1;
+
+        public int coreMask;
+        public int[] coreMaskArray = { 1, 2, 4 };
+        public string[] coreStrings = { "softcore", "mediumcore", "hardcore" };
 
         public static Login plugin;
         public Properties properties;
@@ -41,17 +45,16 @@ namespace Login
 
         public bool kickIfHasInventory;
         public bool onlyAllowNewPlayers;
-        public bool onlyAllowSoftcore;
-        public bool onlyAllowMediumcore;
-        public bool onlyAllowHardcore;
+        public bool forceSoftcore;
+        public bool forceMediumcore;
+        public bool forceHardcore;
         public String inventoryMessage;
-        public String softcoreMessage;
-        public String mediumcoreMessage;
-        public String hardcoreMessage;
+        public String differentInventoryMessage;
+        public String validatedMessage;
         public bool banPiggyBanks;
         public bool banSafes;
         public String startingEquipment;
-        public String jailPoint;
+        public String lobbyPoint;
         public String validatedPoint;
 
         public Hashtable validPlayers = new Hashtable();
@@ -61,7 +64,7 @@ namespace Login
             Name = "Login";
             Description = "A plugin to restrict logins in various ways";
             Author = "amarriner";
-            Version = "0.2";
+            Version = "0.2.1";
             TDSMBuild = 31;
 
             plugin = this;
@@ -84,14 +87,14 @@ namespace Login
 
             AddCommand("setpoint")
                 .WithAccessLevel(AccessLevel.OP)
-                .WithDescription("Allows OPs to set jail or validated points")
-                .WithHelpText("setpoint jail|validated")
+                .WithDescription("Allows OPs to set lobby or validated points")
+                .WithHelpText("setpoint lobby|validated")
                 .Calls(Commands.Commands.SetPoint);
 
             AddCommand("testpoint")
                 .WithAccessLevel(AccessLevel.OP)
-                .WithDescription("Allows OPs to test jail or validated points")
-                .WithHelpText("testpoint jail|validated")
+                .WithDescription("Allows OPs to test lobby or validated points")
+                .WithHelpText("testpoint lobby|validated")
                 .Calls(Commands.Commands.TestPoint);
 
             AddCommand("validate")
@@ -107,26 +110,58 @@ namespace Login
             playersFolder = pluginFolder + Path.DirectorySeparatorChar + "Players";
             CreateDirectory(pluginFolder);
             CreateDirectory(playersFolder);
+            CreateLobby();
 
             properties = new Properties(pluginFolder + Path.DirectorySeparatorChar + "login.properties");
             properties.Load();
             kickIfHasInventory = properties.KickIfHasInventory;
             onlyAllowNewPlayers = properties.OnlyAllowNewPlayers;
-            onlyAllowSoftcore = properties.OnlyAllowSoftcore;
-            onlyAllowMediumcore = properties.OnlyAllowMediumcore;
-            onlyAllowHardcore = properties.OnlyAllowHardcore;
+            forceSoftcore = properties.ForceSoftcore;
+            forceMediumcore = properties.ForceMediumcore;
+            forceHardcore = properties.ForceHardcore;
             inventoryMessage = properties.InventoryMessage;
-            softcoreMessage = properties.SoftcoreMessage;
-            mediumcoreMessage = properties.MediumcoreMessage;
-            hardcoreMessage = properties.HardcoreMessage;
+            differentInventoryMessage = properties.DifferentInventoryMessage;
+            validatedMessage = properties.ValidatedMessage;
             banPiggyBanks = properties.BanPiggyBanks;
             banSafes = properties.BanSafes;
             startingEquipment = properties.StartingEquipment;
-            jailPoint = properties.JailPoint;
+            lobbyPoint = properties.LobbyPoint;
             validatedPoint = properties.ValidatedPoint;
             properties.Save();
 
+            BuildCoreMask();
+
             Program.tConsole.WriteLine(base.Name + " enabled.");
+        }
+
+        public void BuildCoreMask()
+        {
+            coreMask = 0;
+
+            if (forceSoftcore)
+                coreMask += 1;
+
+            if (forceMediumcore)
+                coreMask += 2;
+
+            if (forceHardcore)
+                coreMask += 4;
+        }
+
+        public void CreateLobby()
+        {
+            //if (Server.tile.At(0, 0).Data.Type == 0)
+            //{
+            //    for (int j = 1; j <= 11; j += 10)
+            //    {
+            //        for (int i = 0; i < 20; i++)
+            //        {
+            //            TileRef tileRef = Server.tile.CreateTileAt(i, j);
+            //            bool check = Terraria_Server.WorldMod.WorldModify.PlaceTile(i, j, 1, false, true, -1, 1);
+            //            Program.tConsole.WriteLine("Placed at " + i + "," + j + " (" + check.ToString() + ") REF: " + tileRef.Data.Type);
+            //        }
+            //    }
+            //}
         }
 
         public override void Disable()
@@ -136,14 +171,8 @@ namespace Login
 
         public override void  onPlayerJoin(PlayerLoginEvent Event)
         {
-            if (onlyAllowSoftcore && Event.Player.Difficulty != SOFTCORE)
-                KickPlayer(Event.Player, softcoreMessage);
-
-            else if (onlyAllowMediumcore && Event.Player.Difficulty != MEDIUMCORE)
-                KickPlayer(Event.Player, mediumcoreMessage);
-
-            else if (onlyAllowHardcore && Event.Player.Difficulty != HARDCORE)
-                KickPlayer(Event.Player, hardcoreMessage);
+            if ((coreMask & coreMaskArray[Event.Player.Difficulty]) == 0)
+                KickPlayer(Event.Player, "This server doesn't allow " + coreStrings[Event.Player.Difficulty] + " characters");
 
             else if (onlyAllowNewPlayers)
             {
@@ -154,16 +183,11 @@ namespace Login
 
                     switch (error)
                     {
-                        case PLAYER_INVALID_LOGOFF:
-                            SetPlayerInvalid(Event.Player);
-                            KickPlayer(Event.Player, "You didn't log off cleanly last time");
-                            break;
                         case PLAYER_NO_INVENTORY_MATCH:
                             SetPlayerInvalid(Event.Player);
-                            KickPlayer(Event.Player, "You have different inventory");
+                            KickPlayer(Event.Player, differentInventoryMessage);
                             break;
                         case PLAYER_VALID:
-                            Event.Player.sendMessage("You've been validated", chatColor);
                             SetPlayerValid(Event.Player);
                             break;
                     }
@@ -238,11 +262,11 @@ namespace Login
         {
             string[] point = new string[2];
 
-            if (PointType == JAIL)
+            if (PointType == LOBBY)
             {
-                if (jailPoint != "0,0")
+                if (lobbyPoint != "0,0")
                 {
-                    point = jailPoint.Split(',');
+                    point = lobbyPoint.Split(',');
                     InPlayer.teleportTo(float.Parse(point[0]) * 16, float.Parse(point[1]) * 16);
                 }
             }
@@ -260,17 +284,19 @@ namespace Login
         public override void onPlayerTileChange(PlayerTileChangeEvent Event)
         {
             Player player = Server.GetPlayerByName(Event.Sender.Name);
-            bool jail = player.PluginData.ContainsKey("jail") ? (bool)player.PluginData["jail"] : false;
+            bool lobby = player.PluginData.ContainsKey("lobby") ? (bool)player.PluginData["lobby"] : false;
             bool validated = player.PluginData.ContainsKey("validated") ? (bool)player.PluginData["validated"] : false;
 
-            if ((jail || validated) && player.Op)
+            Program.tConsole.WriteLine("Tile Type: " + Event.Tile.Type.ToString());
+
+            if ((lobby || validated) && player.Op)
             {
-                if (jail)
+                if (lobby)
                 {
-                    jailPoint = (int)Event.Position.X + "," + (int)Event.Position.Y;
-                    properties.JailPoint = jailPoint;
+                    lobbyPoint = (int)Event.Position.X + "," + (int)Event.Position.Y;
+                    properties.LobbyPoint = lobbyPoint;
                     properties.Save();
-                    player.sendMessage("You have set the jail point", chatColor);
+                    player.sendMessage("You have set the lobby point", chatColor);
                 }
                 else if (validated)
                 {
@@ -281,34 +307,31 @@ namespace Login
                 }
 
                 Event.Cancelled = true;
-                player.PluginData["jail"] = false;
+                player.PluginData["lobby"] = false;
                 player.PluginData["validated"] = false;
             }
             else
             {
-                if ((Event.Tile.Type != 29 || !banPiggyBanks) && (Event.Tile.Type != 97 || !banSafes))
+                if (Event.Tile.Type != 29 || !banPiggyBanks)
                     Event.Cancelled = CancelEvent(Event.Sender.Name);
+
+                if (Event.Tile.Type == 97 && banSafes)
+                {
+                    player.sendMessage("Safes are banned on this server", chatColor);
+                    Event.Cancelled = true;
+                }
 
                 base.onPlayerTileChange(Event);
 
-                switch (Event.Tile.Type)
+                if (Event.Tile.Type == 29 && banPiggyBanks)
                 {
-                    case 29: // PIGGY BANK
-                        if (banPiggyBanks)
-                        {
-                            Server.tile.RemoveTileAt((int)Event.Position.X, (int)Event.Position.Y);
-                            NetMessage.SendTileSquare(Server.GetPlayerByName(Event.Sender.Name).whoAmi, (int)Event.Position.X, (int)Event.Position.Y, 1);
-                            Server.tile.RemoveTileAt((int)Event.Position.X + 1, (int)Event.Position.Y);
-                            NetMessage.SendTileSquare(Server.GetPlayerByName(Event.Sender.Name).whoAmi, (int)Event.Position.X + 1, (int)Event.Position.Y, 1);
-                        }
-                        break;
-                    case 97: // SAFE
-                        if (banSafes)
-                        {
-                            Server.tile.RemoveTileAt((int)Event.Position.X, (int)Event.Position.Y);
-                            NetMessage.SendTileSquare(Server.GetPlayerByName(Event.Sender.Name).whoAmi, (int)Event.Position.X, (int)Event.Position.Y, 1);
-                        }
-                        break;
+                    for (int i = (int)Event.Position.X; i <= (int)Event.Position.X + 1; i++)
+                    {
+                        Terraria_Server.WorldMod.WorldModify.KillTile(i, (int)Event.Position.Y);
+                        Terraria_Server.WorldMod.WorldModify.meteor(i, (int)Event.Position.Y);
+                        NetMessage.SendTileSquare(Server.GetPlayerByName(Event.Sender.Name).whoAmi, i, (int)Event.Position.Y, 1);
+                        player.sendMessage("Piggy banks are banned on this server", chatColor);
+                    }
                 }
             }
         }
@@ -358,7 +381,7 @@ namespace Login
             {
                 Server.GetPlayerByName(PlayerName).sendMessage("You cannot change the world until you're validated", chatColor);
                 return true;
-            }
+            }     
 
             return false;
         }
@@ -393,12 +416,13 @@ namespace Login
                 TeleportPlayerToPoint(InPlayer, VALIDATED);
 
             SavePlayerData(InPlayer, false);
+            InPlayer.sendMessage(validatedMessage, chatColor);
         }
 
         public void SetPlayerInvalid(Player InPlayer)
         {
             validPlayers[InPlayer.Name] = false;
-            TeleportPlayerToPoint(InPlayer, JAIL);
+            TeleportPlayerToPoint(InPlayer, LOBBY);
         }
 
         private int LoadPlayerData(Player InPlayer)

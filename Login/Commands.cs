@@ -54,21 +54,21 @@ namespace Login.Commands
             {
                 switch (param.ToUpper())
                 {
-                    case "JAIL":
-                        player.PluginData["jail"] = true;
-                        player.sendMessage("Hit a block where you want the jail to be", Login.plugin.chatColor);
+                    case "LOBBY":
+                        player.PluginData["lobby"] = true;
+                        player.sendMessage("Hit a block where you want the lobby to be", Login.plugin.chatColor);
                         break;
                     case "VALIDATED":
                         player.PluginData["validated"] = true;
                         player.sendMessage("Hit a block where you want the validated point to be", Login.plugin.chatColor);
                         break;
                     default:
-                        player.sendMessage("You must specify either jail or validated", Login.plugin.chatColor);
+                        player.sendMessage("You must specify either lobby or validated", Login.plugin.chatColor);
                         break;
                 }
             }
             else
-                player.sendMessage("You must specify either jail or validated", Login.plugin.chatColor);
+                player.sendMessage("You must specify either lobby or validated", Login.plugin.chatColor);
         }
 
         public static void TestPoint(Server server, ISender sender, ArgumentList args)
@@ -80,21 +80,21 @@ namespace Login.Commands
             {
                 switch (param.ToUpper())
                 {
-                    case "JAIL":
-                        player.sendMessage("Teleporting to the jail", Login.plugin.chatColor);
-                        Login.plugin.TeleportPlayerToPoint(player, Login.JAIL);
+                    case "LOBBY":
+                        player.sendMessage("Teleporting to the lobby", Login.plugin.chatColor);
+                        Login.plugin.TeleportPlayerToPoint(player, Login.LOBBY);
                         break;
                     case "VALIDATED":
                         player.sendMessage("Teleporting to the validated point", Login.plugin.chatColor);
                         Login.plugin.TeleportPlayerToPoint(player, Login.VALIDATED);
                         break;
                     default:
-                        player.sendMessage("You must specify either jail or validated", Login.plugin.chatColor);
+                        player.sendMessage("You must specify either lobby or validated", Login.plugin.chatColor);
                         break;
                 }
             }
             else
-                player.sendMessage("You must specify either jail or validated", Login.plugin.chatColor);
+                player.sendMessage("You must specify either lobby or validated", Login.plugin.chatColor);
         }
 
         public static void ValidatePlayer(Server server, ISender sender, ArgumentList args)
