@@ -20,18 +20,34 @@ namespace Login.Commands
     {
         public static void InvalidatePlayer(Server server, ISender sender, ArgumentList args)
         {
-            string playerName;
+            string playerName, param;
             Player player = server.GetPlayerByName(sender.Name);
 
             if (args.TryGetString(0, out playerName))
             {
                 if (server.GetPlayerByName(playerName) != null)
                 {
-                    Login.plugin.SetPlayerInvalid(server.GetPlayerByName(playerName));
+                    Login.plugin.SetPlayerInvalid(playerName);
                     SendMessage(player, "You have invalidated " + playerName);
                 }
                 else
-                    SendMessage(player, "There is no current player named " + playerName);
+                {
+                    if (args.TryGetString(1, out param))
+                    {
+                        if (param.ToUpper() == "FORCE")
+                        {
+                            Login.plugin.SetPlayerInvalid(playerName);
+                            SendMessage(player, "You have invalidated " + playerName);
+                        }
+                        else
+                            SendMessage(player, "Usage: /invalidate <player> (force)");
+                    }
+                    else
+                    {
+                        SendMessage(player, "There is no current player names " + playerName);
+                        SendMessage(player, "Use /invalidate <player> force to remove offline players");
+                    }
+                }
             }
             else
                 SendMessage(player, "You must supply a player name");

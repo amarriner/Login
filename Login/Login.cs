@@ -23,6 +23,8 @@ namespace Login
         public const int PLAYER_VALID = 0;
         public const int PLAYER_INVALID_LOGOFF = 1;
         public const int PLAYER_NO_INVENTORY_MATCH = 2;
+        public const int PLAYER_INVALID_MAXLIFE = 3;
+        public const int PLAYER_INVALID_MAXMANA = 4;
 
         public const byte SOFTCORE = 0;
         public const byte MEDIUMCORE = 1;
@@ -44,6 +46,7 @@ namespace Login
         public string pluginFolder, playersFolder;
 
         public bool kickIfHasInventory;
+        public bool kickIfDifferentLifeMana;
         public bool onlyAllowNewPlayers;
         public bool forceSoftcore;
         public bool forceMediumcore;
@@ -51,6 +54,10 @@ namespace Login
         public String inventoryMessage;
         public String differentInventoryMessage;
         public String validatedMessage;
+        public String maxLifeMessage;
+        public String maxManaMessage;
+        public bool checkMaxLife;
+        public bool checkMaxMana;
         public bool banPiggyBanks;
         public bool banSafes;
         public String startingEquipment;
@@ -115,6 +122,7 @@ namespace Login
             properties = new Properties(pluginFolder + Path.DirectorySeparatorChar + "login.properties");
             properties.Load();
             kickIfHasInventory = properties.KickIfHasInventory;
+            kickIfDifferentLifeMana = properties.KickIfDifferentLifeMana;
             onlyAllowNewPlayers = properties.OnlyAllowNewPlayers;
             forceSoftcore = properties.ForceSoftcore;
             forceMediumcore = properties.ForceMediumcore;
@@ -122,6 +130,10 @@ namespace Login
             inventoryMessage = properties.InventoryMessage;
             differentInventoryMessage = properties.DifferentInventoryMessage;
             validatedMessage = properties.ValidatedMessage;
+            maxLifeMessage = properties.MaxLifeMessage;
+            maxManaMessage = properties.MaxManaMessage;
+            checkMaxLife = properties.CheckMaxLife;
+            checkMaxMana = properties.CheckMaxMana;
             banPiggyBanks = properties.BanPiggyBanks;
             banSafes = properties.BanSafes;
             startingEquipment = properties.StartingEquipment;
@@ -171,7 +183,7 @@ namespace Login
 
         public override void  onPlayerJoin(PlayerLoginEvent Event)
         {
-            if ((coreMask & coreMaskArray[Event.Player.Difficulty]) == 0)
+            if ((coreMask & coreMaskArray[Event.Player.Difficulty]) == 0 && coreMask > 0)
                 KickPlayer(Event.Player, "This server doesn't allow " + coreStrings[Event.Player.Difficulty] + " characters");
 
             else if (onlyAllowNewPlayers)
@@ -184,8 +196,28 @@ namespace Login
                     switch (error)
                     {
                         case PLAYER_NO_INVENTORY_MATCH:
-                            SetPlayerInvalid(Event.Player);
+                            SetPlayerInvalid(Event.Player.Name);
                             KickPlayer(Event.Player, differentInventoryMessage);
+                            break;
+                        case PLAYER_INVALID_MAXLIFE:
+                            if (checkMaxLife)
+                            {
+                                SetPlayerInvalid(Event.Player.Name);
+                                if (kickIfDifferentLifeMana)
+                                    KickPlayer(Event.Player, maxLifeMessage);
+                                else
+                                    Event.Player.sendMessage(maxLifeMessage, chatColor);
+                            }
+                            break;
+                        case PLAYER_INVALID_MAXMANA:
+                            if (checkMaxMana)
+                            {
+                                SetPlayerInvalid(Event.Player.Name);
+                                if (kickIfDifferentLifeMana)
+                                    KickPlayer(Event.Player, maxManaMessage);
+                                else
+                                    Event.Player.sendMessage(maxManaMessage, chatColor);
+                            }
                             break;
                         case PLAYER_VALID:
                             SetPlayerValid(Event.Player);
@@ -201,7 +233,7 @@ namespace Login
                         else
                         {
                             Event.Player.sendMessage(inventoryMessage, chatColor);
-                            SetPlayerInvalid(Event.Player);
+                            SetPlayerInvalid(Event.Player.Name);
                         }
                     }
                     else
@@ -419,10 +451,20 @@ namespace Login
             InPlayer.sendMessage(validatedMessage, chatColor);
         }
 
-        public void SetPlayerInvalid(Player InPlayer)
+        public void SetPlayerInvalid(String PlayerName)
         {
-            validPlayers[InPlayer.Name] = false;
-            TeleportPlayerToPoint(InPlayer, LOBBY);
+            playersXMLFilename = playersFolder + Path.DirectorySeparatorChar + PlayerName + ".xml";
+            if (File.Exists(playersXMLFilename))
+            {
+                File.Delete(playersXMLFilename);
+            }
+
+            Player player = Server.GetPlayerByName(PlayerName);
+            if (player != null)
+            {
+                validPlayers[player.Name] = false;
+                TeleportPlayerToPoint(player, LOBBY);
+            }
         }
 
         private int LoadPlayerData(Player InPlayer)
@@ -431,6 +473,7 @@ namespace Login
             XmlNodeList nodes;
             XmlNode node, child;
             bool loggedOff = false, validInventory = false;
+            int maxLife = 0, maxMana = 0;
 
             playersXML.Load(playersFolder + Path.DirectorySeparatorChar + InPlayer.Name + ".xml");
 
@@ -451,6 +494,14 @@ namespace Login
                             loggedOff = Boolean.Parse(child.InnerXml);
                             break;
 
+                        case "MAXLIFE":
+                            maxLife = Int32.Parse(child.InnerXml);
+                            break;
+
+                        case "MAXMANA":
+                            maxMana = Int32.Parse(child.InnerXml);
+                            break;
+
                         case "ITEMS":
                             validInventory = (StringifyInventory(InPlayer) == child.InnerXml);
                             break;
@@ -460,6 +511,12 @@ namespace Login
 
             if (validInventory)
                 return PLAYER_VALID;
+
+            if (maxLife > 0 && maxLife != InPlayer.statLifeMax)
+                return PLAYER_INVALID_MAXLIFE;
+
+            if (maxMana > 0 && maxMana != InPlayer.statManaMax)
+                return PLAYER_INVALID_MAXMANA;
 
             if (!loggedOff)
                 return PLAYER_INVALID_LOGOFF;
@@ -490,6 +547,18 @@ namespace Login
             data.InnerXml = LoggingOff.ToString();
             node.AppendChild(data);
 
+            data = playersXML.CreateNode(XmlNodeType.Element, "maxlife", xmlNamespace);
+            data.InnerXml = InPlayer.statLifeMax.ToString();
+            node.AppendChild(data);
+
+            data = playersXML.CreateNode(XmlNodeType.Element, "maxmana", xmlNamespace);
+            data.InnerXml = InPlayer.statManaMax.ToString();
+            node.AppendChild(data);
+
+            data = playersXML.CreateNode(XmlNodeType.Element, "loggedoff", xmlNamespace);
+            data.InnerXml = LoggingOff.ToString();
+            node.AppendChild(data);
+
             items = playersXML.CreateNode(XmlNodeType.Element, "items", xmlNamespace);
             items.InnerXml = StringifyInventory(InPlayer);
 
@@ -513,24 +582,6 @@ namespace Login
 
             returnValue = inventory;
 
-            string ammo = StringifyAmmo(InPlayer);
-            if (returnValue != "" && ammo != "")
-                returnValue += "-";
-
-            returnValue += ammo;
-
-            string bank = StringifyBank(InPlayer);
-            if (returnValue != "" && bank != "")
-                returnValue += "-";
-
-            returnValue += bank;
-
-            string safe = StringifySafe(InPlayer);
-            if (returnValue != "" && safe != "")
-                returnValue += "-";
-
-            returnValue += safe;
-
             string armor = StringifyArmor(InPlayer);
             if (returnValue != "" && armor != "")
                 returnValue += "-";
@@ -538,21 +589,6 @@ namespace Login
             returnValue += armor;
 
             return returnValue;
-        }
-
-        private string StringifyAmmo(Player InPlayer)
-        {
-            string ammo = "";
-
-            for (int i = 0; i < InPlayer.ammo.Length; i++)
-            {
-                if (i > 0)
-                    ammo += "-";
-
-                ammo += InPlayer.ammo[i].Type.ToString() + ":" + InPlayer.ammo[i].Stack.ToString();
-            }
-
-            return ammo;
         }
 
         private string StringifyArmor(Player InPlayer)
@@ -568,36 +604,6 @@ namespace Login
             }
 
             return armor;
-        }
-
-        private string StringifyBank(Player InPlayer)
-        {
-            string bank = "";
-
-            for (int i = 0; i < InPlayer.bank.Length; i++)
-            {
-                if (i > 0)
-                    bank += "-";
-
-                bank += InPlayer.bank[i].Type.ToString() + ":" + InPlayer.bank[i].Stack.ToString();
-            }
-
-            return bank;
-        }
-
-        private string StringifySafe(Player InPlayer)
-        {
-            string safe = "";
-
-            for (int i = 0; i < InPlayer.bank2.Length; i++)
-            {
-                if (i > 0)
-                    safe += "-";
-
-                safe += InPlayer.bank2[i].Type.ToString() + ":" + InPlayer.bank2[i].Stack.ToString();
-            }
-
-            return safe;
         }
 
         private static void CreateDirectory(string dirPath)

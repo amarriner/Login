@@ -50,6 +50,7 @@ http://awbw.amarriner.com/terraria/Login.zip
 ##CHANGELOG
 
 **0.2.1**
+
 * Updated how the *core checking works, allowing for setting more than one to true (changed some properties)
 * Now optionally checking life and mana in addition to inventory
 * Changed "jail" to "lobby"
@@ -58,9 +59,11 @@ http://awbw.amarriner.com/terraria/Login.zip
 * Another pass at banning piggy banks and safes properly
 
 **0.2**
+
 * Added several properties (BanPiggyBanks, BanSafes, StartingEquipment, JailPoint, ValidatedPoint)
 * Added several commands (invalidate, setpoint, testpoint, validate)
 * Fleshed out some of the functionality and refactored some code
 
 **0.1**
+
 * Initial Release

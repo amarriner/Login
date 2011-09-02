@@ -8,7 +8,8 @@ namespace Login
 {
     public class Properties : PropertiesFile
     {
-        private const bool DEFAULT_KICK_IF_HAS_INVENTORY = true;
+        private const bool DEFAULT_KICK_IF_HAS_INVENTORY = false;
+        private const bool DEFAULT_KICK_IF_DIFFERENT_LIFE_MANA = false;
         private const bool DEFAULT_ONLY_ALLOW_NEW_PLAYERS = true;
         private const bool DEFAULT_FORCE_SOFTCORE = false;
         private const bool DEFAULT_FORCE_MEDIUMCORE = false;
@@ -16,6 +17,10 @@ namespace Login
         private const String DEFAULT_INVENTORY_MESSAGE = "Server only allows empty inventory";
         private const String DEFAULT_DIFFERENT_INVENTORY_MESSAGE = "You have different inventory";
         private const String DEFAULT_VALIDATED_MESSAGE = "You've been validated";
+        private const String DEFAULT_MAX_LIFE_MESSAGE = "Your max life is different";
+        private const String DEFAULT_MAX_MANA_MESSAGE = "Your max mana is different";
+        private const bool DEFAULT_CHECK_MAX_LIFE = true;
+        private const bool DEFAULT_CHECK_MAX_MANA = true;
         private const bool DEFAULT_BAN_PIGGY_BANKS = true;
         private const bool DEFAULT_BAN_SAFES = true;
         private const String DEFAULT_STARTING_EQUIPMENT = "ironshortsword-1:ironpickaxe-1:ironaxe-1:wood-100:torch-10";
@@ -23,13 +28,18 @@ namespace Login
         private const String DEFAULT_VALIDATED_POINT = "0,0";
 
         private const String KICK_IF_HAS_INVENTORY = "kickifhasinventory";
+        private const String KICK_IF_DIFFERENT_LIFE_MANA = "kickifdifferentlifemana";
         private const String ONLY_ALLOW_NEW_PLAYERS = "onlyallownewplayers";
         private const String FORCE_SOFTCORE = "forcesoftcore";
         private const String FORCE_MEDIUMCORE = "forcemediumcore";
         private const String FORCE_HARDCORE = "forcehardcore";
         private const String INVENTORY_MESSAGE = "inventorymessage";
         private const String DIFFERENT_INVENTORY_MESSAGE = "differentinventorymessage";
-        private const String VALIDATED_MESSAGE = "validated_message";
+        private const String VALIDATED_MESSAGE = "validatedmessage";
+        private const String MAX_LIFE_MESSAGE = "maxlifemessage";
+        private const String MAX_MANA_MESSAGE = "maxmanamessage";
+        private const String CHECK_MAX_LIFE = "checkmaxlife";
+        private const String CHECK_MAX_MANA = "checkmaxmana";
         private const String BAN_PIGGY_BANKS = "banpiggybanks";
         private const String BAN_SAFES = "bansafes";
         private const String STARTING_EQUIPMENT = "startingequipment";
@@ -43,6 +53,14 @@ namespace Login
             get
             {
                 return getValue(KICK_IF_HAS_INVENTORY, DEFAULT_KICK_IF_HAS_INVENTORY);
+            }
+        }
+
+        public bool KickIfDifferentLifeMana
+        {
+            get
+            {
+                return getValue(KICK_IF_DIFFERENT_LIFE_MANA, DEFAULT_KICK_IF_DIFFERENT_LIFE_MANA);
             }
         }
 
@@ -102,6 +120,38 @@ namespace Login
             }
         }
 
+        public String MaxLifeMessage
+        {
+            get
+            {
+                return getValue(MAX_LIFE_MESSAGE, DEFAULT_MAX_LIFE_MESSAGE);
+            }
+        }
+
+        public String MaxManaMessage
+        {
+            get
+            {
+                return getValue(MAX_MANA_MESSAGE, DEFAULT_MAX_MANA_MESSAGE);
+            }
+        }
+
+        public bool CheckMaxLife
+        {
+            get
+            {
+                return getValue(CHECK_MAX_LIFE, DEFAULT_CHECK_MAX_LIFE);
+            }
+        }
+
+        public bool CheckMaxMana
+        {
+            get
+            {
+                return getValue(CHECK_MAX_MANA, DEFAULT_CHECK_MAX_MANA);
+            }
+        }
+        
         public bool BanPiggyBanks
         {
             get
