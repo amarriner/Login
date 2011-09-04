@@ -71,8 +71,8 @@ namespace Login
             Name = "Login";
             Description = "A plugin to restrict logins in various ways";
             Author = "amarriner";
-            Version = "0.2.1";
-            TDSMBuild = 31;
+            Version = "0.2.2";
+            TDSMBuild = 32;
 
             plugin = this;
 
@@ -139,7 +139,7 @@ namespace Login
             startingEquipment = properties.StartingEquipment;
             lobbyPoint = properties.LobbyPoint;
             validatedPoint = properties.ValidatedPoint;
-            properties.Save();
+            properties.Save(true);
 
             BuildCoreMask();
 
@@ -299,7 +299,7 @@ namespace Login
                 if (lobbyPoint != "0,0")
                 {
                     point = lobbyPoint.Split(',');
-                    InPlayer.teleportTo(float.Parse(point[0]) * 16, float.Parse(point[1]) * 16);
+                    InPlayer.Teleport(float.Parse(point[0]) * 16, float.Parse(point[1]) * 16);
                 }
             }
 
@@ -308,7 +308,7 @@ namespace Login
                 if (validatedPoint != "0,0")
                 {
                     point = validatedPoint.Split(',');
-                    InPlayer.teleportTo(float.Parse(point[0]) * 16, float.Parse(point[1]) * 16);
+                    InPlayer.Teleport(float.Parse(point[0]) * 16, float.Parse(point[1]) * 16);
                 }
             }
         }
@@ -327,14 +327,14 @@ namespace Login
                 {
                     lobbyPoint = (int)Event.Position.X + "," + (int)Event.Position.Y;
                     properties.LobbyPoint = lobbyPoint;
-                    properties.Save();
+                    properties.Save(true);
                     player.sendMessage("You have set the lobby point", chatColor);
                 }
                 else if (validated)
                 {
                     validatedPoint = (int)Event.Position.X + "," + (int)Event.Position.Y;
                     properties.ValidatedPoint = validatedPoint;
-                    properties.Save();
+                    properties.Save(true);
                     player.sendMessage("You have set the validated point", chatColor);
                 }
 

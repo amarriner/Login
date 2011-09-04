@@ -49,6 +49,10 @@ http://awbw.amarriner.com/terraria/Login.zip
 
 ##CHANGELOG
 
+**0.2.2**
+
+* Updated plugin for TDSM Build 32
+
 **0.2.1**
 
 * Updated how the *core checking works, allowing for setting more than one to true (changed some properties)
