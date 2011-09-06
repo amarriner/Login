@@ -71,8 +71,8 @@ namespace Login
             Name = "Login";
             Description = "A plugin to restrict logins in various ways";
             Author = "amarriner";
-            Version = "0.2.2";
-            TDSMBuild = 32;
+            Version = "0.2.3";
+            TDSMBuild = 33;
 
             plugin = this;
 

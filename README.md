@@ -49,6 +49,10 @@ http://awbw.amarriner.com/terraria/Login.zip
 
 ##CHANGELOG
 
+**0.2.3**
+
+* Updated plugin for TDSM Build 33
+
 **0.2.2**
 
 * Updated plugin for TDSM Build 32
